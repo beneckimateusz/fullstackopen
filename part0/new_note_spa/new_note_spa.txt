@@ -1,0 +1,9 @@
+title beneckimateusz/fullstackopen/part0
+
+note over browser:
+push the note to local array
+and send it to the server
+(as it was in spa.js)
+end note
+browser->server: HTTP POST https://studies.cs.helsinki.fi/exampleapp/spa
+server->browser: 201 Created, {"message":"note created"}
