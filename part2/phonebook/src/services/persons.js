@@ -1,5 +1,5 @@
 import axios from "axios";
-const baseUrl = "https://61085263e7db.ngrok.io/persons";
+const baseUrl = "/api/persons";
 
 const getAll = async () => {
   const { data: allPersons } = await axios.get(baseUrl);
