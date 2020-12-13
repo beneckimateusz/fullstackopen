@@ -7,16 +7,26 @@ const getAll = async () => {
 };
 
 const create = async (newObject) => {
-  const { data: returnedObject } = await axios.post(baseUrl, newObject);
-  return returnedObject;
+  try {
+    const { data: returnedObject } = await axios.post(baseUrl, newObject);
+    return returnedObject;
+  } catch (err) {
+    console.error(err.response.data.error);
+    return null;
+  }
 };
 
 const update = async (changedObject) => {
-  const { data: updatedObject } = await axios.put(
-    `${baseUrl}/${changedObject.id}`,
-    changedObject
-  );
-  return updatedObject;
+  try {
+    const { data: updatedObject } = await axios.put(
+      `${baseUrl}/${changedObject.id}`,
+      changedObject
+    );
+    return updatedObject;
+  } catch (err) {
+    console.error(err.response.data.error);
+    return null;
+  }
 };
 
 const remove = (id) => {

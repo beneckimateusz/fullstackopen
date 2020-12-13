@@ -1,3 +1,8 @@
+# !play cat vibing to npm install
 node_modules/
 
+# nested VSC's for deployment purposes
 /part3/.git/
+
+# code along exercises
+/notes/

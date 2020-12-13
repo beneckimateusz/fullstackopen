@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
-import "./styles.css";
-import personService from "./services/persons";
-
+import React, { useEffect, useState } from "react";
 import Filter from "./components/Filter";
+import Notification from "./components/Notification";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
-import Notification from "./components/Notification";
+import personService from "./services/persons";
+import "./styles.css";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -39,26 +38,30 @@ const App = () => {
 
     const newPerson = {
       name,
-      number
+      number,
     };
 
     try {
       if (!matchingPerson) {
         const data = await personService.create(newPerson);
-        setPersons([...persons, data]);
-        showMessage(setAckMessage, `Added ${data.name}`);
+        if (data) {
+          setPersons([...persons, data]);
+          showMessage(setAckMessage, `Added ${data.name}`);
+        }
       } else if (matchingPerson && shouldUpdate) {
         const updatedPerson = await personService.update({
           ...matchingPerson,
-          number
+          number,
         });
-        const newPersons = persons.map((p) =>
-          p.id !== matchingPerson.id ? p : updatedPerson
-        );
-        setPersons(newPersons);
-        showMessage(setAckMessage, `Updated ${updatedPerson.name}'s number`);
+        if (updatedPerson) {
+          const newPersons = persons.map((p) =>
+            p.id !== matchingPerson.id ? p : updatedPerson
+          );
+          setPersons(newPersons);
+          showMessage(setAckMessage, `Updated ${updatedPerson.name}'s number`);
+        }
       }
-    } catch (e) {
+    } catch (err) {
       // unfortunately handling error from update() here
       // wanted to handle both cases in one place but noticed
       // that it brings more pain than benefits
@@ -67,7 +70,7 @@ const App = () => {
         `Information of ${name} has already been removed from server`
       );
       setPersons(persons.filter((p) => p.id !== matchingPerson.id));
-      console.error(e);
+      console.error(err);
     }
   };
 
