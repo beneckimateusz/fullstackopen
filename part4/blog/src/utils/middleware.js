@@ -5,6 +5,8 @@ const unknownEndpoint = (req, res) => {
 const errorHanlder = (err, req, res, next) => {
   if (err.name === 'CastError') {
     return res.status(400).send({ error: 'unknown endpoint' });
+  } else if (err.name === 'ValidationError') {
+    return res.status(400).send({ error: err.message });
   }
 
   next(err);

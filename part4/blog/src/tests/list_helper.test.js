@@ -18,7 +18,7 @@ const listWithOneBlog = [
   },
 ];
 
-const biggerList = [
+const biggerListOfBlogs = [
   {
     _id: '5a422a851b54a676234d17f7',
     title: 'React patterns',
@@ -72,6 +72,7 @@ const biggerList = [
   },
 ];
 
+
 test('dummy returns 1', () => {
   const blogs = [];
 
@@ -89,7 +90,7 @@ describe('total likes', () => {
   });
 
   test('of a bigger list is calculated right', () => {
-    expect(totalLikes(biggerList)).toBe(36);
+    expect(totalLikes(biggerListOfBlogs)).toBe(36);
   });
 });
 
@@ -103,7 +104,7 @@ describe('favorite blog', () => {
   });
 
   test('of a bigger list is selected right', () => {
-    expect(favoriteBlog(biggerList)).toEqual(biggerList[2]);
+    expect(favoriteBlog(biggerListOfBlogs)).toEqual(biggerListOfBlogs[2]);
   });
 });
 
@@ -120,7 +121,7 @@ describe('most blogs', () => {
   });
 
   test('of a bigger list is selected right', () => {
-    expect(mostBlogs(biggerList)).toEqual({
+    expect(mostBlogs(biggerListOfBlogs)).toEqual({
       author: 'Robert C. Martin',
       blogs: 3,
     });
@@ -140,7 +141,7 @@ describe('most likes', () => {
   });
 
   test('of a bigger list is selected right', () => {
-    expect(mostLikes(biggerList)).toEqual({
+    expect(mostLikes(biggerListOfBlogs)).toEqual({
       author: 'Edsger W. Dijkstra',
       likes: 17,
     });
