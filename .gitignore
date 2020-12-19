@@ -7,4 +7,7 @@ node_modules/
 # code along exercises
 /notes/
 
+# VSCode REST Client extension files
+requests/
+
 .env
