@@ -2,7 +2,7 @@ const baseUrl = '/api/blogs';
 
 let token = null;
 
-const setToken = (newToken) => {
+const setToken = newToken => {
   token = `Bearer ${newToken}`;
 };
 
@@ -16,7 +16,7 @@ const create = async blog => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': token,
+      Authorization: token,
     },
     body: JSON.stringify(blog),
   });
@@ -29,4 +29,41 @@ const create = async blog => {
   return body;
 };
 
-export default { setToken, getAll, create };
+const upsert = async blog => {
+  const updatedBlog = { ...blog, user: blog.user.id };
+  delete updatedBlog.id;
+
+  const res = await fetch(`${baseUrl}/${blog.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: token,
+    },
+    body: JSON.stringify(updatedBlog),
+  });
+
+  const body = await res.json();
+  if (body.error) {
+    throw Error(body.error);
+  }
+
+  return body;
+};
+
+const remove = async blogId => {
+  const res = await fetch(`${baseUrl}/${blogId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: token,
+    },
+  });
+
+  if (res.status !== 204) {
+    const body = await res.json();
+    if (body && body.error) {
+      throw Error(body.error);
+    }
+  }
+};
+
+export default { setToken, getAll, create, upsert, remove };
