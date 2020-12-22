@@ -31,12 +31,6 @@ blogsRouter.put('/:id', auth, async (req, res, next) => {
       return res.status(404).send({ error: 'blog not found' });
     }
 
-    if (blog.user.toString() !== req.user._id.toString()) {
-      return res
-        .status(401)
-        .send({ error: 'requesting user does not own this blog' });
-    }
-
     for (const key of Object.keys(req.body)) {
       if (allowedUpdates.includes(key)) {
         blog[key] = req.body[key];

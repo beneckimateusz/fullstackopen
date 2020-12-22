@@ -10,4 +10,6 @@ node_modules/
 # VSCode REST Client extension files
 requests/
 
+cypress/videos/
+
 .env

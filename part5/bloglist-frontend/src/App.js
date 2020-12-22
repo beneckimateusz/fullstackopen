@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import './App.css';
 import Blog from './components/Blog/Blog';
 import BlogForm from './components/BlogForm/BlogForm';
 import LoginForm from './components/LoginForm';
@@ -44,10 +45,10 @@ const App = () => {
       setUser(user);
 
       setAckMessage('successfully logged in!');
-      setTimeout(() => setAckMessage(''), 3000);
+      setTimeout(() => setAckMessage(''), 5000);
     } catch (err) {
       setErrorMessage(err.message);
-      setTimeout(() => setErrorMessage(''), 3000);
+      setTimeout(() => setErrorMessage(''), 5000);
     }
   };
 
@@ -55,7 +56,7 @@ const App = () => {
     localStorage.removeItem('loggedInUser');
     setUser(null);
     setAckMessage('successfully logged out!');
-    setTimeout(() => setAckMessage(''), 3000);
+    setTimeout(() => setAckMessage(''), 5000);
   };
 
   const addBlog = async blogObject => {
@@ -64,27 +65,27 @@ const App = () => {
       setBlogs([...blogs, { ...savedBlog, user }]);
 
       setAckMessage(`added ${savedBlog.title} by ${savedBlog.author}`);
-      setTimeout(() => setAckMessage(''), 3000);
+      setTimeout(() => setAckMessage(''), 5000);
       blogFormRef.current.toggleVisibility();
       return true;
     } catch (err) {
       setErrorMessage(err.message);
-      setTimeout(() => setErrorMessage(''), 3000);
+      setTimeout(() => setErrorMessage(''), 5000);
       return false;
     }
   };
 
   const handleLike = async blogObject => {
-    blogObject.likes++;
-
     try {
-      await blogService.upsert(blogObject);
+      const updatedBlog = { ...blogObject, likes: blogObject.likes + 1 };
+      await blogService.upsert(updatedBlog);
+      setBlogs(blogs.map(b => b.id === updatedBlog.id ? updatedBlog : b));
 
       setAckMessage(`liked ${blogObject.title} by ${blogObject.author}`);
-      setTimeout(() => setAckMessage(''), 3000);
+      setTimeout(() => setAckMessage(''), 5000);
     } catch (err) {
       setErrorMessage(err.message);
-      setTimeout(() => setErrorMessage(''), 3000);
+      setTimeout(() => setErrorMessage(''), 5000);
     }
   };
 
@@ -96,18 +97,13 @@ const App = () => {
 
     try {
       await blogService.remove(blogObject.id);
-      const removedBlogIndex = blogs.findIndex(b => b.id === blogObject.id);
-      if (removedBlogIndex > -1) {
-        const updatedBlogs = [...blogs];
-        updatedBlogs.splice(removedBlogIndex, 1);
-        setBlogs(updatedBlogs);
-
-        setAckMessage(`removed ${blogObject.title} by ${blogObject.author}`);
-        setTimeout(() => setAckMessage(''), 3000);
-      }
+      const updatedBlogs = blogs.filter(b => b.id !== blogObject.id);
+      setBlogs(updatedBlogs);
+      setAckMessage(`removed ${blogObject.title} by ${blogObject.author}`);
+      setTimeout(() => setAckMessage(''), 5000);
     } catch (err) {
       setErrorMessage(err.message);
-      setTimeout(() => setErrorMessage(''), 3000);
+      setTimeout(() => setErrorMessage(''), 5000);
     }
   };
 
@@ -128,8 +124,12 @@ const App = () => {
   return (
     <div>
       <h2>blogs</h2>
-      <h3 style={{ color: 'red' }}>{errorMessage}</h3>
-      <h3 style={{ color: 'green' }}>{ackMessage}</h3>
+      {errorMessage && (
+        <h3 className="notification notification--error">{errorMessage}</h3>
+      )}
+      {ackMessage && (
+        <h3 className="notification notification--success">{ackMessage}</h3>
+      )}
 
       {!user ? (
         loginForm()
@@ -141,15 +141,17 @@ const App = () => {
         </div>
       )}
 
-      {blogsToShow.map(blog => (
-        <Blog
-          key={blog.id}
-          blog={blog}
-          loggedInUser={user}
-          handleLike={handleLike}
-          handleRemove={handleRemove}
-        />
-      ))}
+      <div className="blogs">
+        {blogsToShow.map(blog => (
+          <Blog
+            key={blog.id}
+            blog={blog}
+            loggedInUser={user}
+            handleLike={handleLike}
+            handleRemove={handleRemove}
+          />
+        ))}
+      </div>
     </div>
   );
 };
