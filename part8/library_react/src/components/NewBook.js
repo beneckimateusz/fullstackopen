@@ -11,6 +11,7 @@ const NewBook = props => {
 
   const [addBook] = useMutation(ADD_BOOK, {
     refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }],
+    onError: err => console.error(err.message),
   });
 
   if (!props.show) {

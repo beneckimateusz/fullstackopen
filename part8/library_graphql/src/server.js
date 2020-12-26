@@ -1,5 +1,5 @@
 require('./db/mongoose');
-const { ApolloServer, gql, UserInputError } = require('apollo-server');
+const { ApolloServer, gql, UserInputError, AuthenticationError } = require('apollo-server');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const config = require('./utils/config');
@@ -15,6 +15,7 @@ const typeDefs = gql`
     allAuthors: [Author!]!
 
     me: User
+    recommended: [Book!]!
   }
 
   type Mutation {
@@ -82,6 +83,10 @@ const resolvers = {
     },
     allAuthors: () => Author.find({}),
     me: (root, args, ctx) => ctx.user,
+    recommended: (root, args, { user }) => {
+      if (!user) throw new AuthenticationError('not authenticated');
+      return Book.find({ genres: user.favoriteGenre });
+    },
   },
   Mutation: {
     reset: async () => {
@@ -91,7 +96,7 @@ const resolvers = {
       return true;
     },
     addBook: async (root, args, { user }) => {
-      if (!user) throw new UserInputError('authorization failed');
+      if (!user) throw new AuthenticationError('not authenticated');
 
       const author = await Author.findOne({ name: args.author });
 
@@ -109,7 +114,7 @@ const resolvers = {
       }
     },
     editAuthor: async (root, { name, setBornTo }, { user }) => {
-      if (!user) throw new UserInputError('authorization failed');
+      if (!user) throw new AuthenticationError('not authenticated');
 
       const author = await Author.findOne({ name });
       if (!author) {
@@ -141,8 +146,7 @@ const resolvers = {
         ? await bcrypt.compare(password, user.passwordHash)
         : false;
 
-      if (!user || !passwordMatch)
-      {
+      if (!user || !passwordMatch) {
         throw new UserInputError('wrong credentials');
       }
 
