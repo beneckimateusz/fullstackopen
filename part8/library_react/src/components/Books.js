@@ -1,9 +1,10 @@
-import { useQuery } from '@apollo/client';
+import { useApolloClient, useQuery, useSubscription } from '@apollo/client';
 import React, { useEffect, useState } from 'react';
-import { unique } from '../lib/utils';
-import { ALL_BOOKS } from '../queries';
+import { includedIn, unique } from '../lib/utils';
+import { ALL_BOOKS, BOOK_ADDED } from '../queries';
 
 const Books = props => {
+  const apolloClient = useApolloClient();
   const { loading, error, data } = useQuery(ALL_BOOKS);
   const [allGenres, setAllGenres] = useState([]);
   const [genreFilter, setGenreFilter] = useState([]);
@@ -16,6 +17,24 @@ const Books = props => {
       setGenreFilter(allUniqueGenres);
     }
   }, [data]);
+
+  useSubscription(BOOK_ADDED, {
+    onSubscriptionData: ({ subscriptionData }) => {
+      const bookAdded = subscriptionData.data.bookAdded;
+
+      const { allBooks: booksInStore } = apolloClient.readQuery({
+        query: ALL_BOOKS,
+      });
+      if (!includedIn(booksInStore, bookAdded)) {
+        apolloClient.writeQuery({
+          query: ALL_BOOKS,
+          data: { allBooks: booksInStore.concat(bookAdded) },
+        });
+
+        window.alert(`${bookAdded.title} added!`);
+      }
+    },
+  });
 
   if (!props.show) return null;
   if (loading) return <div>loading...</div>;

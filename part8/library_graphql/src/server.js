@@ -1,11 +1,41 @@
 require('./db/mongoose');
-const { ApolloServer, gql, UserInputError, AuthenticationError } = require('apollo-server');
+const {
+  ApolloServer,
+  gql,
+  UserInputError,
+  AuthenticationError,
+  PubSub,
+} = require('apollo-server');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const config = require('./utils/config');
 const Book = require('./models/book');
 const Author = require('./models/author');
 const User = require('./models/user');
+const DataLoader = require('dataloader');
+
+const pubsub = new PubSub();
+
+const batchAuthors = async keys => {
+  const authors = await Author.find({
+    _id: { $in: keys },
+  });
+
+  return keys.map(key =>
+    authors.find(a => a._id.toString() === key.toString())
+  );
+};
+
+const batchAuthorBooks = async keys => {
+  const authorsBooks = await Book.find({
+    author: { $in: keys },
+  });
+
+  return keys.map(
+    key =>
+      authorsBooks.filter(b => b.author.toString() === key.toString()).length
+  );
+};
 
 const typeDefs = gql`
   type Query {
@@ -34,6 +64,10 @@ const typeDefs = gql`
       favoriteGenre: String!
     ): User
     login(username: String!, password: String!): Token
+  }
+
+  type Subscription {
+    bookAdded: Book!
   }
 
   type Author {
@@ -108,6 +142,7 @@ const resolvers = {
         const book = new Book({ ...args, author: savedAuthor._id });
 
         const savedBook = await book.save();
+        pubsub.publish('BOOK_ADDED', { bookAdded: savedBook });
         return savedBook;
       } catch (err) {
         throw new UserInputError(err.message, { invalidArgs: args });
@@ -154,11 +189,16 @@ const resolvers = {
       return { value: jwt.sign(tokenPayload, config.JWT_SECRET) };
     },
   },
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator('BOOK_ADDED'),
+    },
+  },
   Book: {
-    author: root => Author.findById(root.author),
+    author: async (root, args, { loaders }) => loaders.author.load(root.author),
   },
   Author: {
-    bookCount: root => Book.collection.countDocuments({ author: root._id }),
+    bookCount: async (root, args, { loaders }) => loaders.authorBooks.load(root._id),
   },
 };
 
@@ -174,15 +214,23 @@ const getUser = async token => {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: async ({ req }) => {
-    const token = req.headers.authorization || '';
+  context: async ({ req, connection }) => {
+    if (connection) return connection.context;
 
+    const token = req.headers.authorization || '';
     const user = await getUser(token);
 
-    return { user };
+    return {
+      user,
+      loaders: {
+        author: new DataLoader(keys => batchAuthors(keys)),
+        authorBooks: new DataLoader(keys => batchAuthorBooks(keys)),
+      },
+    };
   },
 });
 
-server.listen().then(({ url }) => {
+server.listen().then(({ url, subscriptionsUrl }) => {
   console.log(`server ready at ${url} 🚀`);
+  console.log(`subscriptions ready at ${subscriptionsUrl}`);
 });

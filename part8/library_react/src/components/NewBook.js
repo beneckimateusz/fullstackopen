@@ -1,6 +1,6 @@
 import { useMutation } from '@apollo/client';
 import React, { useState } from 'react';
-import { ADD_BOOK, ALL_AUTHORS, ALL_BOOKS } from '../queries';
+import { ADD_BOOK } from '../queries';
 
 const NewBook = props => {
   const [title, setTitle] = useState('');
@@ -10,7 +10,6 @@ const NewBook = props => {
   const [genres, setGenres] = useState([]);
 
   const [addBook] = useMutation(ADD_BOOK, {
-    refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }],
     onError: err => console.error(err.message),
   });
 
