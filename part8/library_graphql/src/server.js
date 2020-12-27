@@ -140,9 +140,19 @@ const resolvers = {
           : await new Author({ name: args.author }).save();
 
         const book = new Book({ ...args, author: savedAuthor._id });
-
         const savedBook = await book.save();
-        pubsub.publish('BOOK_ADDED', { bookAdded: savedBook });
+
+
+        /* can't figure out the pubsub here at all (been trying for approx. 3 hours straight) */
+        // const authorForPubsub = savedAuthor._doc;
+        // authorForPubsub.id = authorForPubsub._id;
+
+        // const bookForPubsub = savedBook._doc;
+        // bookForPubsub.id = bookForPubsub._id;
+        // bookForPubsub.author = authorForPubsub;
+
+        // pubsub.publish('BOOK_ADDED', { bookAdded: bookForPubsub });
+        // console.log('{ bookAdded: book }', { bookAdded: book })
         return savedBook;
       } catch (err) {
         throw new UserInputError(err.message, { invalidArgs: args });
