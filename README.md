@@ -1,6 +1,8 @@
 # Fullstackopen
 
-Exercise solutions for [fullstackopen](https://fullstackopen.com/en) project.
+Exercise solutions for [fullstackopen](https://fullstackopen.com/en) project held by University of Helsinki.
+
+Technologies used: React, Redux, Node.js, MongoDB, GraphQL, testing libraries.
 
 ## Phonebook app
 
