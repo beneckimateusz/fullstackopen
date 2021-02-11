@@ -9,6 +9,7 @@ node_modules/
 /notes_redux/
 /phonebook_graphql/
 /fso_typescript/
+/part9/patientor/client/
 
 # VSCode REST Client extension files
 requests/
