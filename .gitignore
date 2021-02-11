@@ -8,6 +8,7 @@ node_modules/
 /notes/
 /notes_redux/
 /phonebook_graphql/
+/fso_typescript/
 
 # VSCode REST Client extension files
 requests/
