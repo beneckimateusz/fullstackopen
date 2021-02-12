@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Gender, NewPatient } from './types';
+import { Gender, NewEntry, NewPatient } from './types';
 
 const isString = (obj: any): obj is string => {
   return typeof obj === 'string' || obj instanceof String;
@@ -14,6 +14,18 @@ const isDate = (date: string): boolean => {
 
 const isGender = (obj: any): obj is Gender => {
   return Object.values(Gender).includes(obj);
+};
+
+const isEntryType = (type: string): boolean => {
+  return ['OccupationalHealthcare', 'Hospital', 'HealthCheck'].includes(type);
+};
+
+const parseEntryType = (obj: any): string => {
+  if (!obj || !isString(obj) || !isEntryType(obj)) {
+    throw new Error(`Incorrect or missing entry type: ${obj}`);
+  }
+
+  return obj;
 };
 
 const parseString = (obj: any, propertyName: string): string => {
@@ -47,7 +59,21 @@ export const toNewPatient = (object: any): NewPatient => {
     ssn: parseString(object.ssn, 'ssn'),
     gender: parseGender(object.gender),
     occupation: parseString(object.occupation, 'occupation'),
+    entries: [],
   };
 
   return newPatient;
+};
+
+export const toNewEntry = (object: any): NewEntry => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const newEntry: NewEntry = {
+    type: parseEntryType(object.type),
+    date: parseDate(object.date, 'date'),
+    description: parseString(object.description, 'description'),
+    specialist: parseString(object.specialist, 'specialist'),
+    ...object,
+  };
+
+  return newEntry;
 };
